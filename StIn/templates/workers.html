@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <div class="notification is-danger">
+                {{ messages[0] }}
+            </div>
+            {% endif %}
+            {% endwith %}
+<h1 class="title">
+    Workers
+</h1>
+<div class="level">
+    <div class="level-left">
+        <div class="level-item">
+            <button class="button is-info js-modal-trigger" data-target="modal-js">
+                <span class="icon">
+                  <i class="fa fa-plus"></i>
+                </span>
+                <span>Add worker</span>
+            </button>
+        </div>
+    </div>
+</div>
+<table class="table">
+    <thead>
+    <tr>
+        <th>№</th>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Type</th>
+        <th>NN/script path</th>
+        <th>Requirements path</th>
+        <th>Date</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for worker in workers %}
+    {% if worker_id|string() != worker.id|string() %}
+    <tr>
+    {% else %}
+    <tr style="background-color: #99daff">
+    {% endif %}
+        <th>{{ loop.index }}</th>
+        <td> {{ worker.id }}</td>
+        <td> {{ worker.name }}</td>
+        <td>{{ worker.type.value }}</td>
+        <td> {{ worker.worker_path}}</td>
+        <td>{{ worker.pip_path }}</td>
+        <td>{{worker.date}}</td>
+        <td>
+            <button class="button is-info js-modal-trigger del-button" data-target="confirm-modal-js"
+                    id="{{worker.id}}">
+                Delete worker
+            </button>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<div id="confirm-modal-js" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+        <div class="box">
+            <h2 class="title">Are you sure?</h2>
+            <form method="POST" action="/workers/delete_worker">
+                <div class="field">
+                    <input class="input" type="hidden" value="test_value1" name="id" id="delete-id">
+                </div>
+                <div class="field is-grouped is-grouped-centered">
+                    <p class="control">
+                        <button class="button is-info is-large" name="delete">Delete</button>
+                    </p>
+                    <p class="control">
+                        <a class="button is-light is-large cancel-del" type="cancel">Cancel</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+    <button class="modal-close is-large" aria-label="close"></button>
+</div>
+
+<div id="modal-js" class="modal">
+    <div class="modal-background"></div>
+
+    <div class="modal-content">
+
+        <div class="box">
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <div class="notification is-danger">
+                {{ messages[0] }}
+            </div>
+            {% endif %}
+            {% endwith %}
+            <form method="POST" action="/workers/upload_worker" enctype="multipart/form-data">
+                <div class="field">
+                    <div class="control in-line">
+                        <label class="label">Type of file</label>
+                        <div class="select">
+                            <select name="type" id="select_type">
+                                {% for type in types %}
+                                <option>{{ type }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="control">
+                        <label class="label">Name</label>
+                        <input class="input is-medium" type="text" name="name" placeholder="Name" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="control in-line">
+                        <label class="label">NN/script file</label>
+                        <div id="model_file" class="file has-name">
+                            <label class="file-label">
+                                <input class="file-input" type="file" name="model_file" required>
+                                <span class="file-cta">
+                              <span class="file-icon">
+                                <i class="fas fa-upload"></i>
+                              </span>
+                              <span class="file-label">
+                                Choose a file…
+                              </span>
+                            </span>
+                                <span class="file-name">
+                              No file uploaded
+                            </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="field" id="pip_req" style="display: none">
+                    <div class="control in-line">
+                        <label class="label">Requirements file</label>
+                        <div id="requirements" class="file has-name">
+                            <label class="file-label">
+                                <input class="file-input" type="file" name="requirements">
+                                <span class="file-cta">
+                              <span class="file-icon">
+                                <i class="fas fa-upload"></i>
+                              </span>
+                              <span class="file-label">
+                                Choose a file…
+                              </span>
+                            </span>
+                                <span class="file-name">
+                              No file uploaded
+                            </span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="field is-grouped is-grouped-centered">
+                    <p class="control">
+                        <button class="button is-block is-info is-medium is-fullwidth">Add</button>
+                    </p>
+                    <p class="control">
+                        <a class="button is-light is-medium cancel-del" type="cancel">Cancel</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <button class="modal-close is-large" aria-label="close"></button>
+</div>
+{% block javascript %}
+<script>
+const fileInput1 = document.querySelector('#model_file input[type=file]');
+const fileInput2 = document.querySelector('#requirements input[type=file]');
+  fileInput1.onchange = () => {
+    if (fileInput1.files.length > 0) {
+      const fileName = document.querySelector('#model_file .file-name');
+      fileName.textContent = fileInput1.files[0].name;
+    }
+  }
+  fileInput2.onchange = () => {
+    if (fileInput2.files.length > 0) {
+      const fileName = document.querySelector('#requirements .file-name');
+      fileName.textContent = fileInput2.files[0].name;
+    }
+  }
+const e_sel = document.getElementById("select_type");
+const pip_req = document.getElementById("pip_req");
+e_sel.onchange = () => {
+    if (e_sel.value == "Script") pip_req.style.display = 'block';
+    else pip_req.style.display = 'none';
+}
+
+
+  // Functions to open and close a modal
+  function openModal($el) {
+    $el.classList.add('is-active');
+    $el.style.setProperty("--modal-content-width", "400px");
+  }
+
+  function closeModal($el) {
+    $el.classList.remove('is-active');
+  }
+
+  function closeAllModals() {
+    (document.querySelectorAll('.modal') || []).forEach(($modal) => {
+      closeModal($modal);
+    });
+  }
+
+  // Add a click event on buttons to open a specific modal
+  (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
+    const modal = $trigger.dataset.target;
+    const $target = document.getElementById(modal);
+
+    $trigger.addEventListener('click', () => {
+      openModal($target);
+    });
+  });
+
+  // Add a click event on various child elements to close the parent modal
+  (document.querySelectorAll('.modal-background, .modal-close, .cancel-del, .modal-card-head .delete, .modal-card-foot .button') || []).forEach(($close) => {
+    const $target = $close.closest('.modal');
+
+    $close.addEventListener('click', () => {
+      closeModal($target);
+    });
+  });
+
+  // Add a keyboard event to close all modals
+  document.addEventListener('keydown', (event) => {
+    const e = event || window.event;
+
+    if (e.keyCode === 27) { // Escape key
+      closeAllModals();
+    }
+  });
+
+
+(document.querySelectorAll('.del-button')).forEach(($delete) => {
+    const $target = document.querySelector('#delete-id');
+
+    $delete.addEventListener('click', () => {
+      $target.value=$delete.id;
+    });
+});
+
+(document.querySelectorAll('tr')).forEach(($row) => {
+
+    $row.addEventListener('click', () => {
+      $row.style["background-color"] = "#fff";
+    });
+});
+
+</script>
+{% endblock %}
+{% endblock %}
