@@ -14,12 +14,9 @@ from StIn.models import Work, MTypes, Statistic
 from StIn.wokers_loaders.keras_loader import keras_creator, keras_predictor
 from StIn.wokers_loaders.pytorch_loader import pytorch_creator, pytorch_predictor
 from StIn.wokers_loaders.script_loader import script_creator, script_predictor
-from StIn.wokers_loaders.theano_loader import theano_creator, theano_predictor
 
-model_creators = {MTypes.pytorch: pytorch_creator, MTypes.keras: keras_creator,
-                  MTypes.theano: theano_creator, MTypes.script: script_creator}
-model_predictors = {MTypes.pytorch: pytorch_predictor, MTypes.keras: keras_predictor,
-                    MTypes.theano: theano_predictor, MTypes.script: script_predictor}
+model_creators = {MTypes.pytorch: pytorch_creator, MTypes.keras: keras_creator, MTypes.script: script_creator}
+model_predictors = {MTypes.pytorch: pytorch_predictor, MTypes.keras: keras_predictor, MTypes.script: script_predictor}
 
 app_dir = os.path.dirname(os.path.dirname(__file__))
 folder_logs = os.path.join(app_dir, 'logs')
