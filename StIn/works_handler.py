@@ -11,17 +11,20 @@ from sqlalchemy import asc
 
 from StIn import res_dict, db
 from StIn.models import Work, MTypes, Statistic
-from StIn.wokers_loaders.keras_loader import keras_loader
-from StIn.wokers_loaders.pytorch_loader import pytorch_loader
-from StIn.wokers_loaders.script_loader import script_loader
-from StIn.wokers_loaders.tensor_loader import tensor_loader
-from StIn.wokers_loaders.theano_loader import theano_loader
+from StIn.wokers_loaders.keras_loader import keras_creator, keras_predictor
+from StIn.wokers_loaders.pytorch_loader import pytorch_creator, pytorch_predictor
+from StIn.wokers_loaders.script_loader import script_creator, script_predictor
+from StIn.wokers_loaders.theano_loader import theano_creator, theano_predictor
 
-targets = {MTypes.pytorch: pytorch_loader, MTypes.keras: keras_loader, MTypes.tensorflow: tensor_loader,
-           MTypes.theano: theano_loader, MTypes.script: script_loader}
+model_creators = {MTypes.pytorch: pytorch_creator, MTypes.keras: keras_creator,
+                  MTypes.theano: theano_creator, MTypes.script: script_creator}
+model_predictors = {MTypes.pytorch: pytorch_predictor, MTypes.keras: keras_predictor,
+                    MTypes.theano: theano_predictor, MTypes.script: script_predictor}
 
 app_dir = os.path.dirname(os.path.dirname(__file__))
 folder_logs = os.path.join(app_dir, 'logs')
+
+active_models = {}
 
 
 def update_stats(work, m_cpu, m_ram, gpu_data, duration, dtw, res):
@@ -61,7 +64,7 @@ def get_lvl(lang, dtw):
     res = "", "No active work"
     if worker_type:
         start_time = time.time()
-        t = threading.Thread(target=targets.get(worker_type), args=(work, dtw,))
+        t = threading.Thread(target=model_predictors.get(worker_type), args=(active_models.get(work.id)[1], dtw,))
         t.start()
         pid = multiprocessing.current_process().pid
         py_proc = psutil.Process(pid)
@@ -96,3 +99,11 @@ def get_lvl(lang, dtw):
     else:
         return "", "No active work"
     return res
+
+
+def create_model(work):
+    active_models[work.id] = work.worker.type, model_creators.get(work.worker.type)(work)
+
+
+def delete_model(work):
+    del active_models[work.id]

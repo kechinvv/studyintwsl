@@ -3,15 +3,14 @@ import json
 import os
 import shutil
 
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify, abort, flash, send_file, \
-    send_from_directory
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify, abort, flash, send_file
 from flask_login import login_required
 from sqlalchemy import asc
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from StIn.models import MTypes, Worker, Work, Token, Statistic
 from . import app, db
-from .works_handler import get_lvl, app_dir
+from .works_handler import get_lvl, app_dir, create_model, delete_model
 
 main = Blueprint('main', __name__)
 
@@ -62,6 +61,10 @@ def update_state():
     work = Work.query.filter_by(id=work_id).first()
     work.state = not work.state
     db.session.commit()
+    if work.state:
+        create_model(work)
+    else:
+        delete_model(work)
     return redirect(url_for('main.index'))
 
 

@@ -9,7 +9,6 @@ from . import db
 
 class MTypes(enum.Enum):
     pytorch = "PyTorch"
-    tensorflow = "TensorFlow"
     keras = "Keras"
     theano = "Theano"
     script = "Script"
