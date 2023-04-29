@@ -1,8 +1,8 @@
+import enum
 import json
 
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash
-import enum
 
 from . import db
 
@@ -13,15 +13,20 @@ class MTypes(enum.Enum):
     script = "Script"
 
 
+ACCESS = {
+    'owner': 0,
+    'senior': 1,
+    'junior': 2
+}
+
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True)
     email = db.Column(db.String(120))
     password = db.Column(db.String(64))
+    access = db.Column(db.Integer)
 
-    # Flask-Login integration
-    # NOTE: is_authenticated, is_active, and is_anonymous
-    # are methods in Flask-Login < 0.3.0
     @property
     def is_authenticated(self):
         return True
@@ -39,6 +44,9 @@ class User(UserMixin, db.Model):
 
     def get_id(self):
         return self.id
+
+    def allowed(self, access_level):
+        return self.access <= access_level
 
     # Required for administrative interface
     def __unicode__(self):

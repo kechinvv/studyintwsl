@@ -3,6 +3,7 @@ import secrets
 
 from flask import Flask
 from flask_login import LoginManager
+from flask_security import Security, SQLAlchemySessionUserDatastore
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash
 
@@ -41,7 +42,9 @@ def create_app():
             db.create_all()
             # passwords are hashed, to use plaintext passwords instead:
             # test_user = User(login="test", password="test")
-            test_user = User(username="test", email="test@mail.com", password=generate_password_hash("test"))
+
+            db.session.commit()
+            test_user = User(username="test", email="test@mail.com", password=generate_password_hash("test"), access=0)
             db.session.add(test_user)
             db.session.commit()
 
@@ -52,5 +55,8 @@ def create_app():
     # blueprint for non-auth parts of app
     from .main_page import main as main_blueprint
     app.register_blueprint(main_blueprint)
+
+    from .admin import admin as admin_blueprint
+    app.register_blueprint(admin_blueprint)
 
     return app
