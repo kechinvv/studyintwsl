@@ -103,4 +103,5 @@ def create_model(work):
 
 
 def delete_model(work):
-    del active_models[work.id]
+    if work.id in active_models.keys():
+        del active_models[work.id]

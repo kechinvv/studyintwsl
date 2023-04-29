@@ -1,6 +1,16 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<div class="notification is-danger">
+    {{ messages[0] }}
+</div>
+{% endif %}
+{% endwith %}
+
+
 <h1 class="title">
     Jobs
 </h1>
@@ -16,6 +26,7 @@
         </div>
     </div>
 </div>
+
 
 <table class="table">
     <thead>
@@ -156,69 +167,69 @@
 
     <button class="modal-close is-large" aria-label="close"></button>
 </div>
-
 {% block javascript %}
 <script>
 
-  // Functions to open and close a modal
-  function openModal($el) {
-    $el.classList.add('is-active');
-    $el.style.setProperty("--modal-content-width", "400px");
-  }
-
-  function closeModal($el) {
-    $el.classList.remove('is-active');
-  }
-
-  function closeAllModals() {
-    (document.querySelectorAll('.modal') || []).forEach(($modal) => {
-      closeModal($modal);
-    });
-  }
-
-  // Add a click event on buttons to open a specific modal
-  (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
-    const modal = $trigger.dataset.target;
-    const $target = document.getElementById(modal);
-
-    $trigger.addEventListener('click', () => {
-      openModal($target);
-    });
-  });
-
-  // Add a click event on various child elements to close the parent modal
-  (document.querySelectorAll('.modal-background, .modal-close, .cancel-del, .modal-card-head .delete, .modal-card-foot .button') || []).forEach(($close) => {
-    const $target = $close.closest('.modal');
-
-    $close.addEventListener('click', () => {
-      closeModal($target);
-    });
-  });
-
-  // Add a keyboard event to close all modals
-  document.addEventListener('keydown', (event) => {
-    const e = event || window.event;
-
-    if (e.keyCode === 27) { // Escape key
-      closeAllModals();
+    // Functions to open and close a modal
+    function openModal($el) {
+        $el.classList.add('is-active');
+        $el.style.setProperty("--modal-content-width", "400px");
     }
-  });
 
-const $del_inp = document.querySelector('#delete-id');
+    function closeModal($el) {
+        $el.classList.remove('is-active');
+    }
 
-function delWork(id) {
-$del_inp.value=id;
-}
+    function closeAllModals() {
+        (document.querySelectorAll('.modal') || []).forEach(($modal) => {
+            closeModal($modal);
+        });
+    }
 
-function updWork(id) {
- $.post( "{{ url_for('main.update_state')}}", { "work_id": id } );
-}
+    // Add a click event on buttons to open a specific modal
+    (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
+        const modal = $trigger.dataset.target;
+        const $target = document.getElementById(modal);
+
+        $trigger.addEventListener('click', () => {
+            openModal($target);
+        });
+    });
+
+    // Add a click event on various child elements to close the parent modal
+    (document.querySelectorAll('.modal-background, .modal-close, .cancel-del, .modal-card-head .delete, .modal-card-foot .button') || []).forEach(($close) => {
+        const $target = $close.closest('.modal');
+
+        $close.addEventListener('click', () => {
+            closeModal($target);
+        });
+    });
+
+    // Add a keyboard event to close all modals
+    document.addEventListener('keydown', (event) => {
+        const e = event || window.event;
+
+        if (e.keyCode === 27) { // Escape key
+            closeAllModals();
+        }
+    });
+
+    const $del_inp = document.querySelector('#delete-id');
+
+    function delWork(id) {
+        $del_inp.value = id;
+    }
+
+    function updWork(id) {
+        $.post("{{ url_for('main.update_state')}}", {"work_id": id}, function (data) {
+            window.location.href = data;
+        });
+    }
 
 
-function getStats(id) {
-    window.open("{{ url_for('main.download_stats' )}}" +"?work_id=" + id, '_blank');
-}
-
+    function getStats(id) {
+        window.open("{{ url_for('main.download_stats' )}}" + "?work_id=" + id, '_blank');
+    }
 
 
 </script>

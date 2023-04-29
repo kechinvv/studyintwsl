@@ -20,6 +20,9 @@ main = Blueprint('main', __name__)
 def index():
     workers_list = Worker.query.order_by(Worker.date).all()
     works_list = Work.query.order_by(Work.date).all()
+    if 'my_message' in request.args:
+        my_msg = request.args['my_message']
+        flash(my_msg)
     return render_template('index.html', works=works_list, workers=workers_list)
 
 
@@ -54,18 +57,23 @@ def upload_work():
     return redirect(url_for('main.index'))
 
 
-@main.route('/works/update_state', methods=['POST'])
+@main.route('/work/update_state', methods=['POST'])
 @login_required
 def update_state():
-    work_id = request.form.get('work_id')
-    work = Work.query.filter_by(id=work_id).first()
-    work.state = not work.state
-    db.session.commit()
-    if work.state:
-        create_model(work)
-    else:
-        delete_model(work)
-    return redirect(url_for('main.index'))
+    my_message = None
+    try:
+        work_id = request.form.get('work_id')
+        work = Work.query.filter_by(id=work_id).first()
+        work.state = not work.state
+        if work.state:
+            create_model(work)
+        else:
+            delete_model(work)
+        db.session.commit()
+    except Exception as e:
+        my_message = str(e)
+        print(e)
+    return url_for('main.index', my_message=my_message)
 
 
 @main.route('/workers/upload_worker', methods=['POST'])
@@ -165,14 +173,16 @@ def download_stats():
     return send_file(path, mimetype='text/csv', download_name=f'{work_id}.txt', as_attachment=True)
 
 
-@main.route('/get_user_lvl', methods=['POST'])
+@main.route('/get_user_lvl')
 def get_user_lvl():
-    data = request.json
-    token = data['token']
+    token = request.headers.get('Authorization')
     tokens_list = Token.query.filter_by(first=token[:4]).all()
     for t in tokens_list:
         if check_password_hash(t.token_hash, token):
-            lvl, msg = get_lvl(data['lang'], data['dtw'])
+            lang = request.args.get("lang")
+            dtw = request.args.get("dtw").split(",")
+            dtw = [float(it) for it in dtw]
+            lvl, msg = get_lvl(lang, dtw)
             return jsonify(
                 message=msg,
                 lvl=lvl,
