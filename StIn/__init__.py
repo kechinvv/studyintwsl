@@ -8,13 +8,15 @@ from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash
 
+
 db = SQLAlchemy()
 app = None
 res_dict = {}
+recaptcha = None
 
 
 def create_app():
-    global app
+    global app, recaptcha
     app = Flask(__name__)
     app.config['SECRET_KEY'] = "aaaaaaaaaaaaaa"
     # app.config['SECRET_KEY'] = secrets.token_hex(16)

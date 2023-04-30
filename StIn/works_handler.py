@@ -25,7 +25,7 @@ active_models = {}
 
 
 def update_stats(work, m_cpu, m_ram, gpu_data, duration, dtw, res):
-    path = os.path.join(app_dir, 'logs', f'{work.id}.txt')
+    path = os.path.join(app_dir, 'logs', f'work-{work.id}.txt')
     if os.path.exists(path):
         os.remove(path)
     date = datetime.datetime.now().replace(microsecond=0)

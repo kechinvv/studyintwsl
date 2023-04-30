@@ -63,7 +63,7 @@ class User(UserMixin, db.Model):
 
 class Worker(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
+    name = db.Column(db.String(50), unique=True)
     worker_path = db.Column(db.String(150))
     pip_path = db.Column(db.String(150))
     type = db.Column(db.Enum(MTypes))
@@ -85,7 +85,7 @@ class Statistic(db.Model):
 
 class Work(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
+    name = db.Column(db.String(50), unique=True)
     worker_id = db.Column(db.Integer, db.ForeignKey('worker.id'))
     language = db.Column(db.String(120))
     state = db.Column(db.Boolean, default=False)
@@ -100,7 +100,7 @@ class Work(db.Model):
 
 class Token(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False)
+    name = db.Column(db.String(50), unique=True)
     first = db.Column(db.String(4), nullable=False)
     token_hash = db.Column(db.String(64), nullable=False)
     date = db.Column(db.DateTime)

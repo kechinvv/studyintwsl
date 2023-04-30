@@ -4,12 +4,13 @@ import os
 import shutil
 
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, abort, flash, send_file
-from flask_login import login_required
+from flask_login import login_required, current_user
 from sqlalchemy import asc
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from StIn.models import MTypes, Worker, Work, Token, Statistic
 from . import app, db
+from .logger import add_log
 from .works_handler import get_lvl, app_dir, create_model, delete_model
 
 main = Blueprint('main', __name__)
@@ -54,6 +55,7 @@ def upload_work():
     work = Work(name=name, worker_id=worker_id, date=date, language=language)
     db.session.add(work)
     db.session.commit()
+    add_log(current_user.id, "Upload job {}".format(name), request.remote_addr)
     return redirect(url_for('main.index'))
 
 
@@ -61,18 +63,19 @@ def upload_work():
 @login_required
 def update_state():
     my_message = None
+    work_id = request.form.get('work_id')
+    work = Work.query.filter_by(id=work_id).first()
     try:
-        work_id = request.form.get('work_id')
-        work = Work.query.filter_by(id=work_id).first()
         work.state = not work.state
         if work.state:
             create_model(work)
         else:
             delete_model(work)
         db.session.commit()
+        add_log(current_user.id, "Turn on job {}".format(work.name), request.remote_addr)
     except Exception as e:
+        add_log(current_user.id, "Turn on job {} with exception {}".format(work.name, str(e)), request.remote_addr)
         my_message = str(e)
-        print(e)
     return url_for('main.index', my_message=my_message)
 
 
@@ -103,6 +106,7 @@ def upload_worker():
     worker = Worker(name=name, type=model_type, date=date, worker_path=model_file_path, pip_path=pip_file_path)
     db.session.add(worker)
     db.session.commit()
+    add_log(current_user.id, "Upload worker {}".format(worker.name), request.remote_addr)
     return redirect(url_for('main.workers'))
 
 
@@ -115,6 +119,7 @@ def upload_token():
     token = Token(name=name, first=token_mean[:4], token_hash=generate_password_hash(token_mean), date=date)
     db.session.add(token)
     db.session.commit()
+    add_log(current_user.id, "Upload token {}".format(token.name), request.remote_addr)
     return redirect(url_for('main.tokens'))
 
 
@@ -125,6 +130,7 @@ def delete_work():
     deleting_work = Work.query.filter_by(id=delete_id).first()
     db.session.delete(deleting_work)
     db.session.commit()
+    add_log(current_user.id, "Delete job {}".format(deleting_work.name), request.remote_addr)
     return redirect(url_for('main.index'))
 
 
@@ -140,6 +146,7 @@ def delete_worker():
     shutil.rmtree(os.path.join(app.instance_path, folder_path))
     db.session.delete(deleting_worker)
     db.session.commit()
+    add_log(current_user.id, "Delete worker {}".format(deleting_worker.name), request.remote_addr)
     return redirect(url_for('main.workers'))
 
 
@@ -150,6 +157,7 @@ def delete_token():
     deleting_token = Token.query.filter_by(id=delete_id).first()
     db.session.delete(deleting_token)
     db.session.commit()
+    add_log(current_user.id, "Delete token {}".format(deleting_token.name), request.remote_addr)
     return redirect(url_for('main.tokens'))
 
 
@@ -171,6 +179,8 @@ def download_stats():
                                                                                                         stat.dtw,
                                                                                                         json.loads(
                                                                                                             stat.res)))
+    work = Work.query.filter_by(id=work_id).first()
+    add_log(current_user.id, "Download stats for job {}".format(work.name), request.remote_addr)
     return send_file(path, mimetype='text/csv', download_name=f'work-{work_id}.txt', as_attachment=True)
 
 

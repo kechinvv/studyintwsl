@@ -1,16 +1,16 @@
 import datetime
-import json
 import os
 from functools import wraps
 
-from flask import Blueprint, render_template_string, flash, render_template, request, send_file
+from flask import Blueprint, flash, render_template, request, send_file
 from flask import redirect, url_for
 from flask_login import current_user, login_required
 from sqlalchemy import asc
 from werkzeug.security import generate_password_hash
 
 from StIn import db
-from StIn.models import Roles, User, Statistic, UserLog
+from StIn.logger import add_log
+from StIn.models import Roles, User, UserLog
 from StIn.works_handler import app_dir
 
 admin = Blueprint('admin', __name__)
@@ -24,6 +24,7 @@ def requires_access_level(access_level):
                 return redirect(url_for('auth.login'))
 
             if not current_user.allowed(access_level):
+                add_log(current_user.id, "Try view users without access", request.remote_addr)
                 flash('You do not have access to this resource.', 'danger')
                 return redirect(url_for('main.index'))
             return f(*args, **kwargs)
@@ -50,6 +51,7 @@ def users():
 def upload_user():
     access = Roles[request.form.get('role')].value
     if access <= current_user.access:
+        add_log(current_user.id, "Try upload user without access", request.remote_addr)
         flash('You do not have access to this action.', 'danger')
     else:
         username = request.form.get('username')
@@ -58,6 +60,7 @@ def upload_user():
         user = User(username=username, password=generate_password_hash(password), access=access, date=date)
         db.session.add(user)
         db.session.commit()
+        add_log(current_user.id, "Upload user {}".format(username), request.remote_addr)
     return redirect(url_for('admin.users'))
 
 
@@ -68,22 +71,26 @@ def delete_user():
     delete_id = request.form.get('id')
     deleting_user = User.query.filter_by(id=delete_id).first()
     if deleting_user.access <= current_user.access:
+        add_log(current_user.id, "Try delete user without access", request.remote_addr)
         flash('You do not have access to this action.', 'danger')
     else:
         db.session.delete(deleting_user)
         db.session.commit()
+        add_log(current_user.id, "Delete user {}".format(deleting_user.username), request.remote_addr)
     return redirect(url_for('admin.users'))
 
 
 @admin.route('/download_logs')
 @login_required
 @requires_access_level(Roles.senior)
-def download_stats():
+def download_logs():
     user_id = int(request.args.get('user_id'))
     user = User.query.filter_by(id=user_id).first()
     if user.access < current_user.access:
+        add_log(current_user.id, "Try download logs without access", request.remote_addr)
         flash('You do not have access to this action.', 'danger')
         return redirect(url_for('admin.users'))
+    add_log(current_user.id, "Download logs for {}".format(user.username), request.remote_addr)
     path = os.path.join(app_dir, 'logs', f'user-{user_id}.txt')
     if not os.path.exists(path):
         with open(path, "a") as file:
