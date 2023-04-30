@@ -37,6 +37,9 @@
                 <a href="{{ url_for('main.index') }}" class="navbar-item">Jobs</a>
                 <a href="{{ url_for('main.workers') }}" class="navbar-item">Workers</a>
                 <a href="{{ url_for('main.tokens') }}" class="navbar-item">Tokens</a>
+                {% if current_user.allowed(1) %}
+                <a href="{{ url_for('admin.users') }}" class="navbar-item">Users</a>
+                {% endif %}
                 {% endif %}
             </div>
             <div class="navbar-end">

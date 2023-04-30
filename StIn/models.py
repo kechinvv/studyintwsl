@@ -13,11 +13,18 @@ class MTypes(enum.Enum):
     script = "Script"
 
 
-ACCESS = {
-    'owner': 0,
-    'senior': 1,
-    'junior': 2
-}
+class Roles(enum.IntEnum):
+    owner = 0
+    senior = 1
+    junior = 2
+
+
+class UserLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    action = db.Column(db.String(300))
+    addr = db.Column(db.String(50))
+    date = db.Column(db.DateTime)
 
 
 class User(UserMixin, db.Model):
@@ -25,6 +32,8 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True)
     password = db.Column(db.String(64))
     access = db.Column(db.Integer)
+    date = db.Column(db.DateTime)
+    logs = db.relationship("UserLog", backref='user')
 
     @property
     def is_authenticated(self):
@@ -85,6 +94,7 @@ class Work(db.Model):
     ram = db.Column(db.Float, default=0)
     gpu = db.Column(db.JSON, default=json.dumps([(0, 0)]))
     time = db.Column(db.Float, default=0)
+    exc = db.Column(db.String(50), default='-')
     stats = db.relationship("Statistic", backref='work')
 
 

@@ -154,9 +154,10 @@ def delete_token():
 
 
 @main.route('/download_stats')
+@login_required
 def download_stats():
     work_id = int(request.args.get('work_id'))
-    path = os.path.join(app_dir, 'logs', f'{work_id}.txt')
+    path = os.path.join(app_dir, 'logs', f'work-{work_id}.txt')
     if not os.path.exists(path):
         with open(path, "a") as file:
             res = Statistic.query.filter_by(work_id=work_id).order_by(asc(Statistic.id)).all()
@@ -170,7 +171,7 @@ def download_stats():
                                                                                                         stat.dtw,
                                                                                                         json.loads(
                                                                                                             stat.res)))
-    return send_file(path, mimetype='text/csv', download_name=f'{work_id}.txt', as_attachment=True)
+    return send_file(path, mimetype='text/csv', download_name=f'work-{work_id}.txt', as_attachment=True)
 
 
 @main.route('/get_user_lvl')

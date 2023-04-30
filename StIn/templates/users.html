@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <div class="notification is-danger">
+                {{ messages[0] }}
+            </div>
+            {% endif %}
+            {% endwith %}
+<h1 class="title">
+    Users
+</h1>
+<div class="level">
+    <div class="level-left">
+        <div class="level-item">
+            <button class="button is-info js-modal-trigger" data-target="modal-js" onclick="genPas()">
+                <span class="icon">
+                  <i class="fa fa-plus"></i>
+                </span>
+                <span>Add user</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>№</th>
+        <th>Username</th>
+        <th>Role</th>
+        <th>Date</th>
+        <th>Get logs</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for user in users %}
+    <tr>
+        <th>{{ loop.index }}</th>
+        <td> {{ user.username }}</td>
+        <td> {{ roles[user.access] }}</td>
+        <td> {{ user.date }}</td>
+        <td>
+            <button class="button is-info" onclick="getLogs({{user.id|string()}})">
+                Get
+            </button>
+        </td>
+        <td>
+            {% if user.access != 0 %}
+            <button class="button is-info js-modal-trigger del-button" data-target="confirm-modal-js"
+                    onclick="delUser({{ user.id|string() }})">
+                Delete user
+            </button>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<div id="confirm-modal-js" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+        <div class="box">
+            <h2 class="title">Are you sure?</h2>
+            <form method="POST" action="users/delete_user">
+                <div class="field">
+                    <input class="input" type="hidden" value="test_value1" name="id" id="delete-id">
+                </div>
+                <div class="field is-grouped is-grouped-centered">
+                    <p class="control">
+                        <button class="button is-info is-large" name="delete">Delete</button>
+                    </p>
+                    <p class="control">
+                        <a class="button is-light is-large cancel-del" type="cancel">Cancel</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+    <button class="modal-close is-large" aria-label="close"></button>
+</div>
+
+<div id="modal-js" class="modal">
+    <div class="modal-background"></div>
+
+    <div class="modal-content">
+
+        <div class="box">
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <div class="notification is-danger">
+                {{ messages[0] }}
+            </div>
+            {% endif %}
+            {% endwith %}
+            <form method="POST" action="/users/upload_user">
+                <div class="field">
+                    <div class="control">
+                        <label class="label">Username</label>
+                        <input class="input is-medium" type="text" name="username" placeholder="Username" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="control in-line">
+                        <label class="label">Type of file</label>
+                        <div class="select">
+                            <select name="role" id="select_role">
+                                {% for role in roles.keys() %}
+                                {% if role > current_user.access %}
+                                <option>{{ roles[role] }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="control">
+                        <label class="label is-info">Password</label>
+                        <input id="pas_inp" class="input is-medium" type="text" name="password"
+                               placeholder="Password" required>
+                    </div>
+                </div>
+
+                <div class="field is-grouped is-grouped-centered">
+                    <p class="control">
+                        <button class="button is-block is-info is-medium is-fullwidth">Add</button>
+                    </p>
+                    <p class="control">
+                        <a class="button is-light is-medium cancel-del" type="cancel">Cancel</a>
+                    </p>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+
+    <button class="modal-close is-large" aria-label="close"></button>
+</div>
+
+{% block javascript %}
+<script>
+
+    // Functions to open and close a modal
+    function openModal($el) {
+        $el.classList.add('is-active');
+        $el.style.setProperty("--modal-content-width", "400px");
+    }
+
+    function closeModal($el) {
+        $el.classList.remove('is-active');
+    }
+
+    function closeAllModals() {
+        (document.querySelectorAll('.modal') || []).forEach(($modal) => {
+            closeModal($modal);
+        });
+    }
+
+    // Add a click event on buttons to open a specific modal
+    (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
+        const modal = $trigger.dataset.target;
+        const $target = document.getElementById(modal);
+
+        $trigger.addEventListener('click', () => {
+            openModal($target);
+        });
+    });
+
+    // Add a click event on various child elements to close the parent modal
+    (document.querySelectorAll('.modal-background, .modal-close, .cancel-del, .modal-card-head .delete, .modal-card-foot .button') || []).forEach(($close) => {
+        const $target = $close.closest('.modal');
+
+        $close.addEventListener('click', () => {
+            closeModal($target);
+        });
+    });
+
+    // Add a keyboard event to close all modals
+    document.addEventListener('keydown', (event) => {
+        const e = event || window.event;
+
+        if (e.keyCode === 27) { // Escape key
+            closeAllModals();
+        }
+    });
+
+    const $del_inp = document.querySelector('#delete-id');
+
+    function delUser(id) {
+        $del_inp.value = id;
+    }
+
+    const pas_inp = document.getElementById('pas_inp')
+
+    function genPas() {
+        let result = '';
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const charactersLength = characters.length;
+        let counter = 0;
+        while (counter < 10) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+            counter += 1;
+        }
+        pas_inp.value = result;
+    }
+
+    function getLogs(id) {
+        window.open("{{ url_for('admin.download_logs' )}}" + "?user_id=" + id, '_blank');
+    }
+
+
+</script>
+{% endblock %}
+{% endblock %}

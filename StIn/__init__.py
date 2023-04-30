@@ -1,10 +1,10 @@
+import datetime
 import json
 import os
 import secrets
 
 from flask import Flask
 from flask_login import LoginManager
-from flask_security import Security, SQLAlchemySessionUserDatastore
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash
 
@@ -47,7 +47,8 @@ def create_app():
             with open('StIn/users.json') as f:
                 users = json.load(f)
             for key in users.keys():
-                test_user = User(username=key, password=generate_password_hash(users[key]), access=0)
+                test_user = User(username=key, password=generate_password_hash(users[key]), access=0,
+                                 date=datetime.datetime.now().replace(microsecond=0))
                 db.session.add(test_user)
                 db.session.commit()
 
