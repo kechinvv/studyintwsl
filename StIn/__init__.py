@@ -1,3 +1,4 @@
+import json
 import os
 import secrets
 
@@ -40,13 +41,15 @@ def create_app():
     if not os.path.exists(database_path):
         with app.app_context():
             db.create_all()
+            db.session.commit()
             # passwords are hashed, to use plaintext passwords instead:
             # test_user = User(login="test", password="test")
-
-            db.session.commit()
-            test_user = User(username="test", email="test@mail.com", password=generate_password_hash("test"), access=0)
-            db.session.add(test_user)
-            db.session.commit()
+            with open('StIn/users.json') as f:
+                users = json.load(f)
+            for key in users.keys():
+                test_user = User(username=key, password=generate_password_hash(users[key]), access=0)
+                db.session.add(test_user)
+                db.session.commit()
 
     # blueprint for auth routes in our app
     from .auth import auth as auth_blueprint

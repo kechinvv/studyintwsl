@@ -9,7 +9,6 @@ from StIn.models import ACCESS
 admin = Blueprint('admin', __name__)
 
 
-### custom wrap to determine access level ###
 def requires_access_level(access_level):
     def decorator(f):
         @wraps(f)
@@ -32,5 +31,12 @@ def requires_access_level(access_level):
 @admin.route("/owner_panel")
 @login_required
 @requires_access_level(ACCESS['owner'])
-def member_page():
-    return render_template_string('<h1>OK</h1> <a href="/">Go back?</a>')
+def member_control():
+    return render_template_string('<h1>owner</h1> <a href="/">Go back?</a>')
+
+
+@admin.route("/senior_panel")
+@login_required
+@requires_access_level(ACCESS['senior'])
+def junior_control():
+    return render_template_string('<h1>senior</h1> <a href="/">Go back?</a>')
