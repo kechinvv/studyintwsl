@@ -3,7 +3,6 @@ from functools import wraps
 from flask import Blueprint, render_template_string, flash
 from flask import redirect, url_for
 from flask_login import current_user, login_required
-from flask_security import roles_accepted
 
 from StIn.models import ACCESS
 

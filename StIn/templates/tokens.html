@@ -89,8 +89,9 @@
                 </div>
                 <div class="field">
                     <div class="control">
-                        <label class="label">Token</label>
-                        <input class="input is-medium" type="text" name="token" placeholder="Token" required>
+                        <label class="label is-info" onclick="genToken()">Token (click here to gen)</label>
+                        <input id="token_inp" class="input is-medium" type="text" name="token"
+                               placeholder="Token" required>
                     </div>
                 </div>
 
@@ -114,55 +115,69 @@
 {% block javascript %}
 <script>
 
-  // Functions to open and close a modal
-  function openModal($el) {
-    $el.classList.add('is-active');
-    $el.style.setProperty("--modal-content-width", "400px");
-  }
-
-  function closeModal($el) {
-    $el.classList.remove('is-active');
-  }
-
-  function closeAllModals() {
-    (document.querySelectorAll('.modal') || []).forEach(($modal) => {
-      closeModal($modal);
-    });
-  }
-
-  // Add a click event on buttons to open a specific modal
-  (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
-    const modal = $trigger.dataset.target;
-    const $target = document.getElementById(modal);
-
-    $trigger.addEventListener('click', () => {
-      openModal($target);
-    });
-  });
-
-  // Add a click event on various child elements to close the parent modal
-  (document.querySelectorAll('.modal-background, .modal-close, .cancel-del, .modal-card-head .delete, .modal-card-foot .button') || []).forEach(($close) => {
-    const $target = $close.closest('.modal');
-
-    $close.addEventListener('click', () => {
-      closeModal($target);
-    });
-  });
-
-  // Add a keyboard event to close all modals
-  document.addEventListener('keydown', (event) => {
-    const e = event || window.event;
-
-    if (e.keyCode === 27) { // Escape key
-      closeAllModals();
+    // Functions to open and close a modal
+    function openModal($el) {
+        $el.classList.add('is-active');
+        $el.style.setProperty("--modal-content-width", "400px");
     }
-  });
 
-const $del_inp = document.querySelector('#delete-id');
+    function closeModal($el) {
+        $el.classList.remove('is-active');
+    }
 
-function delToken(id) {
-$del_inp.value=id;
-}
+    function closeAllModals() {
+        (document.querySelectorAll('.modal') || []).forEach(($modal) => {
+            closeModal($modal);
+        });
+    }
+
+    // Add a click event on buttons to open a specific modal
+    (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
+        const modal = $trigger.dataset.target;
+        const $target = document.getElementById(modal);
+
+        $trigger.addEventListener('click', () => {
+            openModal($target);
+        });
+    });
+
+    // Add a click event on various child elements to close the parent modal
+    (document.querySelectorAll('.modal-background, .modal-close, .cancel-del, .modal-card-head .delete, .modal-card-foot .button') || []).forEach(($close) => {
+        const $target = $close.closest('.modal');
+
+        $close.addEventListener('click', () => {
+            closeModal($target);
+        });
+    });
+
+    // Add a keyboard event to close all modals
+    document.addEventListener('keydown', (event) => {
+        const e = event || window.event;
+
+        if (e.keyCode === 27) { // Escape key
+            closeAllModals();
+        }
+    });
+
+    const $del_inp = document.querySelector('#delete-id');
+
+    function delToken(id) {
+        $del_inp.value = id;
+    }
+
+    const token_inp = document.getElementById('token_inp')
+
+    function genToken() {
+        let result = '';
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const charactersLength = characters.length;
+        let counter = 0;
+        while (counter < 16) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+            counter += 1;
+        }
+        token_inp.value = result;
+    }
 
 </script>
 {% endblock %}
