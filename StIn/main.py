@@ -16,6 +16,18 @@ from .works_handler import get_lvl, app_dir, create_model, delete_model
 main = Blueprint('main', __name__)
 
 
+@app.before_first_request
+def state_init():
+    works_list = Work.query.all()
+    for work in works_list:
+        if work.state:
+            try:
+                create_model(work)
+            except Exception:
+                work.state = False
+                db.session.commit()
+
+
 @main.route('/')
 @login_required
 def index():
@@ -182,8 +194,11 @@ def delete_worker():
         if deleting_worker.works:
             flash('Please, delete works with worker {} before'.format(deleting_worker.name))
             return redirect(url_for('main.workers', worker_id=delete_id))
-        folder_path = ''.join('_' if c in ' .:,/' else c for c in str(deleting_worker.date))
-        shutil.rmtree(os.path.join(app.instance_path, folder_path))
+        try:
+            folder_path = ''.join('_' if c in ' .:,/' else c for c in str(deleting_worker.date))
+            shutil.rmtree(os.path.join(app.instance_path, folder_path))
+        except Exception as e:
+            flash(str(e))
         db.session.delete(deleting_worker)
         db.session.commit()
         add_log(current_user.id, "Delete worker {}".format(deleting_worker.name), request.remote_addr)
@@ -247,6 +262,6 @@ def get_user_lvl():
             lvl, msg = get_lvl(lang, dtw)
             return jsonify(
                 message=msg,
-                lvl=lvl,
+                lvl=lvl
             )
     abort(401, description="Access denied")

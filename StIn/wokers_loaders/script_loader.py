@@ -1,3 +1,4 @@
+import sys
 import threading
 from subprocess import Popen, PIPE
 
@@ -15,9 +16,14 @@ def script_creator(work):
 
 
 def script_predictor(path, dtw):
+    p = None
     try:
-        p = Popen(['python3', path], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        output, err = p.communicate(str(dtw).encode('utf8'))
-        res_dict[threading.current_thread().name] = (output, "ok")
+        p = Popen([sys.executable, path], stdin=PIPE, stdout=PIPE,
+                  stderr=PIPE)
+        output, err = p.communicate(str(dtw).encode('utf-8'), timeout=15)
+        print(err)
+        res_dict[threading.current_thread().name] = (str(output.decode('ascii').strip()), "ok")
     except Exception as e:
+        if p:
+            p.kill()
         res_dict[threading.current_thread().name] = ("", str(e))

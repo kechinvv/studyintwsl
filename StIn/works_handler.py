@@ -30,9 +30,8 @@ def update_stats(work, m_cpu, m_ram, gpu_data, duration, dtw, res):
         os.remove(path)
     date = datetime.datetime.now().replace(microsecond=0)
     rows = Statistic.query.filter_by(work_id=work.id).count()
-    print(rows)
-    stat = Statistic(work_id=work.id, cpu=m_cpu, ram=m_ram, gpu=json.dumps(gpu_data), time=duration, date=date,
-                     dtw=json.dumps(dtw), res=json.dumps(res))
+    stat = Statistic(work_id=work.id, cpu=m_cpu, ram=m_ram, gpu=json.dumps("gpu_data"), time=duration, date=date,
+                     dtw=json.dumps(""), res=json.dumps(""))
     db.session.add(stat)
     db.session.commit()
     work.cpu = round((work.cpu * rows + m_cpu) / (rows + 1), 5)
@@ -61,7 +60,7 @@ def get_lvl(lang, dtw):
     res = "", "No active work"
     if worker_type:
         start_time = time.time()
-        t = threading.Thread(target=model_predictors.get(worker_type), args=(active_models.get(work.id)[1], dtw,))
+        t = threading.Thread(target=model_predictors.get(worker_type), args=(active_models[work.id][1], dtw,))
         t.start()
         pid = multiprocessing.current_process().pid
         py_proc = psutil.Process(pid)
@@ -92,7 +91,6 @@ def get_lvl(lang, dtw):
                 gpu_data[i][0] /= counter
                 gpu_data[i][1] /= counter
         update_stats(work, m_cpu, m_ram, gpu_data, duration, dtw, res)
-        res = "1", "Ok"
     else:
         return "", "No active work"
     return res
