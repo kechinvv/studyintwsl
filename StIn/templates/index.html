@@ -41,7 +41,6 @@
         <th>RAM %</th>
         <th>GPU (used (mb), util (%))</th>
         <th>Time (sec)</th>
-        <th>Exception</th>
         <th>Get all stats</th>
         <th></th>
     </tr>
@@ -73,7 +72,6 @@
         <td>{{work.ram}}</td>
         <td>{{ work.gpu }}</td>
         <td>{{work.time}}</td>
-        <td>{{work.exc}}</td>
         <td>
             <button class="button is-info" onclick="getStats({{work.id|string()}})">
                 Get

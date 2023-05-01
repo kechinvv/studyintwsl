@@ -94,7 +94,6 @@ class Work(db.Model):
     ram = db.Column(db.Float, default=0)
     gpu = db.Column(db.JSON, default=json.dumps([(0, 0)]))
     time = db.Column(db.Float, default=0)
-    exc = db.Column(db.String(50), default='-')
     stats = db.relationship("Statistic", backref='work')
 
 
