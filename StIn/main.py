@@ -8,7 +8,7 @@ from flask_login import login_required, current_user
 from sqlalchemy import asc
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from StIn.models import MTypes, Worker, Work, Token, Statistic
+from StIn.models import MTypes, Worker, Work, Token, Statistics
 from . import app, db
 from .logger import add_log
 from .works_handler import get_lvl, app_dir, create_model, delete_model
@@ -231,7 +231,7 @@ def download_stats():
         path = os.path.join(app_dir, 'logs', f'work-{work_id}.txt')
         if not os.path.exists(path):
             with open(path, "a") as file:
-                res = Statistic.query.filter_by(work_id=work_id).order_by(asc(Statistic.id)).all()
+                res = Statistics.query.filter_by(work_id=work_id).order_by(asc(Statistics.id)).all()
                 for stat in res:
                     file.write("Date {}; Work={}; cpu={}; ram={}; gpu={}; time={}; dtw={}; res={}\n".format(stat.date,
                                                                                                             stat.work.name,

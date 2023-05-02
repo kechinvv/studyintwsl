@@ -10,7 +10,7 @@ import psutil
 from sqlalchemy import asc
 
 from StIn import res_dict, db
-from StIn.models import Work, MTypes, Statistic
+from StIn.models import Work, MTypes, Statistics
 from StIn.wokers_loaders.keras_loader import keras_creator, keras_predictor
 from StIn.wokers_loaders.pytorch_loader import pytorch_creator, pytorch_predictor
 from StIn.wokers_loaders.script_loader import script_creator, script_predictor
@@ -29,9 +29,9 @@ def update_stats(work, m_cpu, m_ram, gpu_data, duration, dtw, res):
     if os.path.exists(path):
         os.remove(path)
     date = datetime.datetime.now().replace(microsecond=0)
-    rows = Statistic.query.filter_by(work_id=work.id).count()
-    stat = Statistic(work_id=work.id, cpu=m_cpu, ram=m_ram, gpu=json.dumps("gpu_data"), time=duration, date=date,
-                     dtw=json.dumps(""), res=json.dumps(""))
+    rows = Statistics.query.filter_by(work_id=work.id).count()
+    stat = Statistics(work_id=work.id, cpu=m_cpu, ram=m_ram, gpu=json.dumps("gpu_data"), time=duration, date=date,
+                      dtw=json.dumps(""), res=json.dumps(""))
     db.session.add(stat)
     db.session.commit()
     work.cpu = round((work.cpu * rows + m_cpu) / (rows + 1), 5)
@@ -49,7 +49,7 @@ def update_stats(work, m_cpu, m_ram, gpu_data, duration, dtw, res):
     work.time = round((work.time * rows + duration) / (rows + 1), 5)
     db.session.commit()
     if rows > 10000:
-        deleting_stat = Statistic.query.filter_by(work_id=work.id).order_by(asc(Statistic.id)).first()
+        deleting_stat = Statistics.query.filter_by(work_id=work.id).order_by(asc(Statistics.id)).first()
         db.session.delete(deleting_stat)
         db.session.commit()
 

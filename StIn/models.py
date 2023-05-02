@@ -30,7 +30,7 @@ class UserLog(db.Model):
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True)
-    password = db.Column(db.String(64))
+    password = db.Column(db.String(200))
     access = db.Column(db.Integer)
     date = db.Column(db.DateTime)
     logs = db.relationship("UserLog", backref='user')
@@ -71,7 +71,7 @@ class Worker(db.Model):
     works = db.relationship('Work', backref='worker')
 
 
-class Statistic(db.Model):
+class Statistics(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     work_id = db.Column(db.Integer, db.ForeignKey('work.id'))
     cpu = db.Column(db.Float, default=0)
@@ -94,12 +94,12 @@ class Work(db.Model):
     ram = db.Column(db.Float, default=0)
     gpu = db.Column(db.JSON, default=json.dumps([(0, 0)]))
     time = db.Column(db.Float, default=0)
-    stats = db.relationship("Statistic", backref='work')
+    stats = db.relationship("Statistics", backref='work')
 
 
 class Token(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True)
     first = db.Column(db.String(4), nullable=False)
-    token_hash = db.Column(db.String(64), nullable=False)
+    token_hash = db.Column(db.String(200), nullable=False)
     date = db.Column(db.DateTime)
