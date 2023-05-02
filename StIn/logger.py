@@ -3,7 +3,7 @@ import os
 
 from sqlalchemy import asc
 
-from StIn import db
+from StIn import db, lock
 from StIn.models import UserLog
 from StIn.works_handler import app_dir
 
@@ -11,7 +11,8 @@ from StIn.works_handler import app_dir
 def add_log(current_user_id, msg, addr):
     path = os.path.join(app_dir, 'logs', f'user-{current_user_id}.txt')
     if os.path.exists(path):
-        os.remove(path)
+        with lock:
+            os.remove(path)
     row = UserLog(user_id=current_user_id, action=msg, addr=addr, date=datetime.datetime.now().replace(microsecond=0))
     db.session.add(row)
     db.session.commit()

@@ -9,7 +9,7 @@ import GPUtil
 import psutil
 from sqlalchemy import asc
 
-from StIn import res_dict, db
+from StIn import res_dict, db, lock
 from StIn.models import Work, MTypes, Statistics
 from StIn.wokers_loaders.keras_loader import keras_creator, keras_predictor
 from StIn.wokers_loaders.pytorch_loader import pytorch_creator, pytorch_predictor
@@ -27,7 +27,8 @@ active_models = {}
 def update_stats(work, m_cpu, m_ram, gpu_data, duration, dtw, res):
     path = os.path.join(app_dir, 'logs', f'work-{work.id}.txt')
     if os.path.exists(path):
-        os.remove(path)
+        with lock:
+            os.remove(path)
     date = datetime.datetime.now().replace(microsecond=0)
     rows = Statistics.query.filter_by(work_id=work.id).count()
     stat = Statistics(work_id=work.id, cpu=m_cpu, ram=m_ram, gpu=json.dumps("gpu_data"), time=duration, date=date,

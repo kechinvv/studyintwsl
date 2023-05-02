@@ -9,7 +9,7 @@ from sqlalchemy import asc
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from StIn.models import MTypes, Worker, Work, Token, Statistics
-from . import app, db
+from . import app, db, lock
 from .logger import add_log
 from .works_handler import get_lvl, app_dir, create_model, delete_model
 
@@ -100,10 +100,11 @@ def update_state():
         work_id = request.form.get('work_id')
         work = Work.query.filter_by(id=work_id).first()
         work.state = not work.state
-        if work.state:
-            create_model(work)
-        else:
-            delete_model(work)
+        with lock:
+            if work.state:
+                create_model(work)
+            else:
+                delete_model(work)
         db.session.commit()
         add_log(current_user.id, "State of {} = {}".format(work.name, work.state), request.remote_addr)
     except Exception as e:
@@ -196,7 +197,8 @@ def delete_worker():
             return redirect(url_for('main.workers', worker_id=delete_id))
         try:
             folder_path = ''.join('_' if c in ' .:,/' else c for c in str(deleting_worker.date))
-            shutil.rmtree(os.path.join(app.instance_path, folder_path))
+            with lock:
+                shutil.rmtree(os.path.join(app.instance_path, folder_path))
         except Exception as e:
             flash(str(e))
         db.session.delete(deleting_worker)
@@ -230,18 +232,20 @@ def download_stats():
         work_id = int(request.args.get('work_id'))
         path = os.path.join(app_dir, 'logs', f'work-{work_id}.txt')
         if not os.path.exists(path):
-            with open(path, "a") as file:
-                res = Statistics.query.filter_by(work_id=work_id).order_by(asc(Statistics.id)).all()
-                for stat in res:
-                    file.write("Date {}; Work={}; cpu={}; ram={}; gpu={}; time={}; dtw={}; res={}\n".format(stat.date,
-                                                                                                            stat.work.name,
-                                                                                                            stat.cpu,
-                                                                                                            stat.ram,
-                                                                                                            stat.gpu,
-                                                                                                            stat.time,
-                                                                                                            stat.dtw,
-                                                                                                            json.loads(
-                                                                                                                stat.res)))
+            with lock:
+                with open(path, "a") as file:
+                    res = Statistics.query.filter_by(work_id=work_id).order_by(asc(Statistics.id)).all()
+                    for stat in res:
+                        file.write(
+                            "Date {}; Work={}; cpu={}; ram={}; gpu={}; time={}; dtw={}; res={}\n".format(stat.date,
+                                                                                                         stat.work.name,
+                                                                                                         stat.cpu,
+                                                                                                         stat.ram,
+                                                                                                         stat.gpu,
+                                                                                                         stat.time,
+                                                                                                         stat.dtw,
+                                                                                                         json.loads(
+                                                                                                             stat.res)))
         work = Work.query.filter_by(id=work_id).first()
         add_log(current_user.id, "Download stats for job {}".format(work.name), request.remote_addr)
         return send_file(path, mimetype='text/csv', download_name=f'work-{work_id}.txt', as_attachment=True)

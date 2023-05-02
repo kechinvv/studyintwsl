@@ -8,7 +8,7 @@ from flask_login import current_user, login_required
 from sqlalchemy import asc
 from werkzeug.security import generate_password_hash
 
-from StIn import db
+from StIn import db, lock
 from StIn.logger import add_log
 from StIn.models import Roles, User, UserLog
 from StIn.works_handler import app_dir
@@ -107,10 +107,11 @@ def download_logs():
         add_log(current_user.id, "Download logs for {}".format(user.username), request.remote_addr)
         path = os.path.join(app_dir, 'logs', f'user-{user_id}.txt')
         if not os.path.exists(path):
-            with open(path, "a") as file:
-                res = UserLog.query.filter_by(user_id=user_id).order_by(asc(UserLog.id)).all()
-                for row in res:
-                    file.write("Date {}; {}; addr={}\n".format(row.date, row.action, row.addr))
+            with lock:
+                with open(path, "a") as file:
+                    res = UserLog.query.filter_by(user_id=user_id).order_by(asc(UserLog.id)).all()
+                    for row in res:
+                        file.write("Date {}; {}; addr={}\n".format(row.date, row.action, row.addr))
         return send_file(path, mimetype='text/csv', download_name=f'user-{user_id}.txt', as_attachment=True)
     except Exception as e:
         flash(str(e))

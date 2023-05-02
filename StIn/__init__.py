@@ -4,6 +4,7 @@ import os
 import secrets
 import shutil
 import subprocess
+import threading
 
 from flask import Flask
 from flask_login import LoginManager
@@ -12,6 +13,8 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
 from sqlalchemy_utils import database_exists, create_database
 from werkzeug.security import generate_password_hash
+
+lock = threading.Lock()
 
 db = SQLAlchemy()
 app = Flask(__name__)
