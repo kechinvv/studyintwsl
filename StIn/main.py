@@ -252,16 +252,25 @@ def download_stats():
 
 @main.route('/get_user_lvl')
 def get_user_lvl():
-    token = request.headers.get('Authorization')
-    tokens_list = Token.query.filter_by(first=token[:4]).all()
-    for t in tokens_list:
-        if check_password_hash(t.token_hash, token):
-            lang = request.args.get("lang")
-            dtw = request.args.get("dtw").split(",")
-            dtw = [float(it) for it in dtw]
-            lvl, msg = get_lvl(lang, dtw)
-            return jsonify(
-                message=msg,
-                lvl=lvl
-            )
-    abort(401, description="Access denied")
+    try:
+        token = request.headers.get('Authorization')
+        tokens_list = Token.query.filter_by(first=token[:4]).all()
+        for t in tokens_list:
+            if check_password_hash(t.token_hash, token):
+                if 'lang' in request.args:
+                    lang = request.args.get("lang")
+                else:
+                    lang = 'en'
+                dtw = request.args.get("dtw").split(",")
+                dtw = [float(it) for it in dtw]
+                lvl, msg = get_lvl(lang, dtw)
+                return jsonify(
+                    message=msg,
+                    lvl=lvl
+                )
+        abort(401, description="Access denied")
+    except Exception as e:
+        return jsonify(
+            message=str(e),
+            lvl=""
+        )
