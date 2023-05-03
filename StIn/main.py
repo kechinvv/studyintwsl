@@ -204,9 +204,9 @@ def delete_worker():
         db.session.delete(deleting_worker)
         db.session.commit()
         add_log(current_user.id, "Delete worker {}".format(deleting_worker.name), request.remote_addr)
+        return redirect(url_for('main.workers'))
     except Exception as e:
         flash(str(e))
-    finally:
         return redirect(url_for('main.workers'))
 
 
