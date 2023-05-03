@@ -24,7 +24,7 @@ def requires_access_level(access_level):
                 return redirect(url_for('auth.login'))
 
             if not current_user.allowed(access_level):
-                add_log(current_user.id, "Try view users without access {}".format(request.url), request.remote_addr)
+                add_log(current_user.id, "Attempt to interact with users accounts without access {}".format(request.url), request.remote_addr)
                 flash('You do not have access to this resource.', 'danger')
                 return redirect(url_for('main.index'))
             return f(*args, **kwargs)
@@ -57,7 +57,7 @@ def upload_user():
     try:
         access = Roles[request.form.get('role')].value
         if access <= current_user.access:
-            add_log(current_user.id, "Try upload user without access", request.remote_addr)
+            add_log(current_user.id, "Attempt to upload user without access", request.remote_addr)
             flash('You do not have access to this action.', 'danger')
         else:
             username = request.form.get('username')
@@ -81,7 +81,7 @@ def delete_user():
         delete_id = request.form.get('id')
         deleting_user = User.query.filter_by(id=delete_id).first()
         if deleting_user.access <= current_user.access:
-            add_log(current_user.id, "Try delete user without access", request.remote_addr)
+            add_log(current_user.id, "Attempt to delete user without access", request.remote_addr)
             flash('You do not have access to this action.', 'danger')
         else:
             db.session.delete(deleting_user)
@@ -101,7 +101,7 @@ def download_logs():
         user_id = int(request.args.get('user_id'))
         user = User.query.filter_by(id=user_id).first()
         if user.access < current_user.access:
-            add_log(current_user.id, "Try download logs without access", request.remote_addr)
+            add_log(current_user.id, "Attempt to download logs without access", request.remote_addr)
             flash('You do not have access to this action.', 'danger')
             return redirect(url_for('admin.users'))
         add_log(current_user.id, "Download logs for {}".format(user.username), request.remote_addr)
