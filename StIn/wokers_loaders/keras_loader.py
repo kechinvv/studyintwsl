@@ -15,9 +15,12 @@ max_features = 5000
 
 def keras_creator(work):
     model = tf.keras.models.load_model(work.worker.worker_path)
-    with open(work.worker.pip_path) as f:
-        data = json.load(f)
-        tokenizer = tokenizer_from_json(data)
+    if work.worker.pip_path != '-':
+        with open(work.worker.pip_path) as f:
+            data = json.load(f)
+            tokenizer = tokenizer_from_json(data)
+    else:
+        tokenizer = None
     return [model, tokenizer]
 
 
@@ -27,12 +30,14 @@ def keras_predictor(nn, dtw):
         tokenizer = nn[1]
         maxlen = 60
 
-        for layer in model.layers:
-            if type(layer) == InputLayer:
-                maxlen = layer.input_shape[0][1]
-        list_tokenized = tokenizer.texts_to_sequences([dtw])
-        input_dtw = pad_sequences(list_tokenized, maxlen=maxlen)
-
+        if tokenizer:
+            for layer in model.layers:
+                if type(layer) == InputLayer:
+                    maxlen = layer.input_shape[0][1]
+            list_tokenized = tokenizer.texts_to_sequences([dtw])
+            input_dtw = pad_sequences(list_tokenized, maxlen=maxlen)
+        else:
+            input_dtw = dtw
         preds = model.predict(input_dtw)
 
         max_res_ind = np.unravel_index(np.argmax(preds, axis=None), preds.shape)
