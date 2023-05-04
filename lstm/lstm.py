@@ -1,6 +1,9 @@
+import json
+
 import numpy as np
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
 from keras.preprocessing import text
+from keras.preprocessing.text import tokenizer_from_json
 
 from keras.utils.data_utils import pad_sequences
 from sklearn.model_selection import train_test_split
@@ -47,6 +50,10 @@ def my_LSTM():
 
 
 def train():
+    tokenizer_json = tokenizer.to_json()
+    with open('tokenizer.json', 'w', encoding='utf-8') as f:
+        f.write(json.dumps(tokenizer_json, ensure_ascii=False))
+
     model = my_LSTM()
     model.summary()
     model.compile(loss='binary_crossentropy', optimizer=RMSprop(), metrics=['accuracy'])
@@ -93,13 +100,16 @@ def hand_sentence(text, model):
 
 if __name__ == '__main__':
     # train()
+    with open('tokenizer.json') as f:
+        data = json.load(f)
+        tokenizer = tokenizer_from_json(data)
     model = load_model('stin_model_lstm.keras')
     for layer in model.layers:
         print(type(layer))
         if type(layer) == InputLayer:
             print(layer.input_shape[0][1])
     print(model.evaluate(X_te, y_test))
-    list_tokenized = tokenizer.texts_to_sequences(["[4.36, 5.97, 8.04, 6.79, 3.73]"])
+    list_tokenized = tokenizer.texts_to_sequences(["[40.36, 5.97, 18.04, 26.79, 13.73]"])
     xxx = pad_sequences(list_tokenized, maxlen=maxlen)
     res = model.predict(xxx)
     print(res)

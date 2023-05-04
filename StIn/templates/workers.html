@@ -2,12 +2,12 @@
 
 {% block content %}
 {% with messages = get_flashed_messages() %}
-            {% if messages %}
-            <div class="notification is-danger">
-                {{ messages[0] }}
-            </div>
-            {% endif %}
-            {% endwith %}
+{% if messages %}
+<div class="notification is-danger">
+    {{ messages[0] }}
+</div>
+{% endif %}
+{% endwith %}
 <h1 class="title">
     Workers
 </h1>
@@ -40,9 +40,9 @@
     {% for worker in workers %}
     {% if worker_id|string() != worker.id|string() %}
     <tr>
-    {% else %}
+        {% else %}
     <tr style="background-color: #99daff">
-    {% endif %}
+        {% endif %}
         <th>{{ loop.index }}</th>
         <td> {{ worker.id }}</td>
         <td> {{ worker.name }}</td>
@@ -136,9 +136,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="field" id="pip_req" style="display: none">
+                <div class="field" id="pip_req">
                     <div class="control in-line">
-                        <label class="label">Requirements file</label>
+                        <label class="label" id="tok_pip_l">Tokenizer/Requirements</label>
                         <div id="requirements" class="file has-name">
                             <label class="file-label">
                                 <input class="file-input" type="file" name="requirements">
@@ -174,87 +174,87 @@
 </div>
 {% block javascript %}
 <script>
-const fileInput1 = document.querySelector('#model_file input[type=file]');
-const fileInput2 = document.querySelector('#requirements input[type=file]');
-  fileInput1.onchange = () => {
-    if (fileInput1.files.length > 0) {
-      const fileName = document.querySelector('#model_file .file-name');
-      fileName.textContent = fileInput1.files[0].name;
+    const fileInput1 = document.querySelector('#model_file input[type=file]');
+    const fileInput2 = document.querySelector('#requirements input[type=file]');
+    fileInput1.onchange = () => {
+        if (fileInput1.files.length > 0) {
+            const fileName = document.querySelector('#model_file .file-name');
+            fileName.textContent = fileInput1.files[0].name;
+        }
     }
-  }
-  fileInput2.onchange = () => {
-    if (fileInput2.files.length > 0) {
-      const fileName = document.querySelector('#requirements .file-name');
-      fileName.textContent = fileInput2.files[0].name;
+    fileInput2.onchange = () => {
+        if (fileInput2.files.length > 0) {
+            const fileName = document.querySelector('#requirements .file-name');
+            fileName.textContent = fileInput2.files[0].name;
+        }
     }
-  }
-const e_sel = document.getElementById("select_type");
-const pip_req = document.getElementById("pip_req");
-e_sel.onchange = () => {
-    if (e_sel.value == "Script") pip_req.style.display = 'block';
-    else pip_req.style.display = 'none';
-}
+    const e_sel = document.getElementById("select_type");
+    const pip_req = document.getElementById("tok_pip_l");
+   // e_sel.onchange = () => {
+  //      if (e_sel.value == "Script") pip_req.text('Requirements file');
+   //     else pip_req.text('Tokenizer');
+  //  }
 
 
-  // Functions to open and close a modal
-  function openModal($el) {
-    $el.classList.add('is-active');
-    $el.style.setProperty("--modal-content-width", "400px");
-  }
-
-  function closeModal($el) {
-    $el.classList.remove('is-active');
-  }
-
-  function closeAllModals() {
-    (document.querySelectorAll('.modal') || []).forEach(($modal) => {
-      closeModal($modal);
-    });
-  }
-
-  // Add a click event on buttons to open a specific modal
-  (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
-    const modal = $trigger.dataset.target;
-    const $target = document.getElementById(modal);
-
-    $trigger.addEventListener('click', () => {
-      openModal($target);
-    });
-  });
-
-  // Add a click event on various child elements to close the parent modal
-  (document.querySelectorAll('.modal-background, .modal-close, .cancel-del, .modal-card-head .delete, .modal-card-foot .button') || []).forEach(($close) => {
-    const $target = $close.closest('.modal');
-
-    $close.addEventListener('click', () => {
-      closeModal($target);
-    });
-  });
-
-  // Add a keyboard event to close all modals
-  document.addEventListener('keydown', (event) => {
-    const e = event || window.event;
-
-    if (e.keyCode === 27) { // Escape key
-      closeAllModals();
+    // Functions to open and close a modal
+    function openModal($el) {
+        $el.classList.add('is-active');
+        $el.style.setProperty("--modal-content-width", "400px");
     }
-  });
 
+    function closeModal($el) {
+        $el.classList.remove('is-active');
+    }
 
-(document.querySelectorAll('.del-button')).forEach(($delete) => {
-    const $target = document.querySelector('#delete-id');
+    function closeAllModals() {
+        (document.querySelectorAll('.modal') || []).forEach(($modal) => {
+            closeModal($modal);
+        });
+    }
 
-    $delete.addEventListener('click', () => {
-      $target.value=$delete.id;
+    // Add a click event on buttons to open a specific modal
+    (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
+        const modal = $trigger.dataset.target;
+        const $target = document.getElementById(modal);
+
+        $trigger.addEventListener('click', () => {
+            openModal($target);
+        });
     });
-});
 
-(document.querySelectorAll('tr')).forEach(($row) => {
+    // Add a click event on various child elements to close the parent modal
+    (document.querySelectorAll('.modal-background, .modal-close, .cancel-del, .modal-card-head .delete, .modal-card-foot .button') || []).forEach(($close) => {
+        const $target = $close.closest('.modal');
 
-    $row.addEventListener('click', () => {
-      $row.style["background-color"] = "#fff";
+        $close.addEventListener('click', () => {
+            closeModal($target);
+        });
     });
-});
+
+    // Add a keyboard event to close all modals
+    document.addEventListener('keydown', (event) => {
+        const e = event || window.event;
+
+        if (e.keyCode === 27) { // Escape key
+            closeAllModals();
+        }
+    });
+
+
+    (document.querySelectorAll('.del-button')).forEach(($delete) => {
+        const $target = document.querySelector('#delete-id');
+
+        $delete.addEventListener('click', () => {
+            $target.value = $delete.id;
+        });
+    });
+
+    (document.querySelectorAll('tr')).forEach(($row) => {
+
+        $row.addEventListener('click', () => {
+            $row.style["background-color"] = "#fff";
+        });
+    });
 
 </script>
 {% endblock %}

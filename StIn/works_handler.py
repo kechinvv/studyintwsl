@@ -67,7 +67,7 @@ def get_lvl(lang, dtw):
         py_proc = psutil.Process(pid)
         counter, cpu_sum, ram_sum, sum_gpu_used, sum_gpu_util = 0, 0, 0, 0, 0
         GPUs = GPUtil.getGPUs()
-        gpu_data = [(0, 0)] * len(GPUs)
+        gpu_data = [[0, 0]] * len(GPUs)
         while t.is_alive():
             counter += 1
             cpu = py_proc.cpu_percent()

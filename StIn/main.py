@@ -126,9 +126,9 @@ def upload_worker():
         model_type = request.form.get('type').lower()
         name = request.form.get('name')
         model_file = request.files['model_file']
-        pip_file = None
+        dep_file = None
         if request.files['requirements']:
-            pip_file = request.files['requirements']
+            dep_file = request.files['requirements']
         date = datetime.datetime.now().replace(microsecond=0)
 
         folder_path = ''.join('_' if c in ' .:,/' else c for c in str(date))
@@ -139,9 +139,9 @@ def upload_worker():
         model_file_path = os.path.join(app.instance_path, folder_path, model_file.filename)
         model_file.save(model_file_path)
 
-        if pip_file:
-            pip_file_path = os.path.join(app.instance_path, folder_path, pip_file.filename)
-            pip_file.save(pip_file_path)
+        if dep_file:
+            pip_file_path = os.path.join(app.instance_path, folder_path, dep_file.filename)
+            dep_file.save(pip_file_path)
         else:
             pip_file_path = '-'
         worker = Worker(name=name, type=model_type, date=date, worker_path=model_file_path, pip_path=pip_file_path)
@@ -265,8 +265,7 @@ def get_user_lvl():
                     lang = request.args.get("lang")
                 else:
                     lang = 'en'
-                dtw = request.args.get("dtw").split(",")
-                dtw = [float(it) for it in dtw]
+                dtw = request.args.get("dtw")
                 lvl, msg = get_lvl(lang, dtw)
                 return jsonify(
                     message=msg,

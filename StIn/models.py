@@ -76,7 +76,7 @@ class Statistics(db.Model):
     work_id = db.Column(db.Integer, db.ForeignKey('work.id'))
     cpu = db.Column(db.Float, default=0)
     ram = db.Column(db.Float, default=0)
-    gpu = db.Column(db.JSON, default=json.dumps([(0, 0)]))
+    gpu = db.Column(db.JSON, default=json.dumps([[0, 0]]))
     time = db.Column(db.Float, default=0)
     dtw = db.Column(db.JSON)
     res = db.Column(db.JSON)
@@ -92,7 +92,7 @@ class Work(db.Model):
     date = db.Column(db.DateTime)
     cpu = db.Column(db.Float, default=0)
     ram = db.Column(db.Float, default=0)
-    gpu = db.Column(db.JSON, default=json.dumps([(0, 0)]))
+    gpu = db.Column(db.JSON, default=json.dumps([[0, 0]]))
     time = db.Column(db.Float, default=0)
     stats = db.relationship("Statistics", backref='work')
 
