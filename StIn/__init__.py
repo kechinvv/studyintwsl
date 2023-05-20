@@ -18,8 +18,8 @@ lock = threading.Lock()
 
 db = SQLAlchemy()
 app = Flask(__name__)
-app.config['SECRET_KEY'] = "aaaaaaaaaaaaaa"
-# app.config['SECRET_KEY'] = secrets.token_hex(16)
+# app.config['SECRET_KEY'] = "aaaaaaaaaaaaaa"
+app.config['SECRET_KEY'] = secrets.token_hex(16)
 app.config['DATABASE_FILE'] = 'db.sqlite'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:valera@winhost:5432/stin_cls"
